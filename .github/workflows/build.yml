@@ -1,0 +1,41 @@
+name: Build Pro Paint APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:  # Allows manual triggering from the GitHub UI
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+
+      - name: Install Buildozer and Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython virtualenv
+
+      - name: Build APK with Buildozer
+        run: |
+          # The debug flag builds the APK without requiring Google Play developer keys
+          buildozer android debug
+          
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pro-Paint-Studio-APK
+          path: bin/*.apk
+          retention-days: 7
